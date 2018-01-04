@@ -19,10 +19,19 @@ class TodoList extends Component {
     })
   };
 
+  removeTodo = (id) => {
+    this.props.removeTodo({
+      variables: { id },
+      update: (proxy, { data: { deleteTodo } }) => {
+        this.props.todos.refetch();
+      },
+    });
+  }
+
   renderTodoList = () => (
     <ul>
       { this.props.todos.allTodoes.map(todo =>
-        <li key={todo.id}>{todo.text}</li>
+        <li key={todo.id}>{todo.text} <i title="Remover" onClick={() => {this.removeTodo(todo.id)}}>X</i></li>
       )}
     </ul>
   )
@@ -52,7 +61,7 @@ const TodosQuery = gql`
     allTodoes {
       id
       text
-      completed
+      # completed
     }
   }
 `;
@@ -62,7 +71,16 @@ const TodoMutation = gql`
     createTodo ( text: $text ) {
       id
       text
-      completed
+      # completed
+    }
+  }
+`;
+
+const TodoRemoval = gql`
+  mutation ($id: ID!) {
+    deleteTodo (id: $id) {
+      id
+      text
     }
   }
 `;
@@ -70,4 +88,5 @@ const TodoMutation = gql`
 export default compose(
   graphql(TodosQuery, { name: 'todos' }),
   graphql(TodoMutation, { name: 'addTodo' }),
+  graphql(TodoRemoval, { name: 'removeTodo' }),
 )(TodoList);
